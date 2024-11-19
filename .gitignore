@@ -1,0 +1,58 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+env/
+venv/
+Env/
+ENV/
+env.bak/
+venv.bak/
+
+# Installed packages
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+*.log
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+.pytype/
+
+# Python-specific files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pde
+*.pdm
+
+# Environments
+.env
+.venv
+
+# key
+*.key
+
+NoN/
+
+resources/static/js/vendor/
+resources/static/css/vendor/
+

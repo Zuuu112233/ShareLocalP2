@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P File Sharing</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>P2P File Sharing</h1>
+    
+    <!-- Generate Code -->
+    <div>
+        <h2>Generate Code</h2>
+        <button id="generate-code">Generate Code</button>
+        <p id="my-code"></p>
+    </div>
+
+    <!-- Send File -->
+    <div>
+        <h2>Send File</h2>
+        <input type="text" id="recipient-code" placeholder="Recipient Code" />
+        <input type="file" id="file-input" />
+        <button id="send-file">Send File</button>
+    </div>
+
+    <!-- Received Files -->
+    <div>
+        <h2>Received Files</h2>
+        <ul id="received-files"></ul>
+    </div>
+
+    <script>
+        const socket = io();
+
+        // Generate code
+        const generateCodeButton = document.getElementById('generate-code');
+        const myCodeDisplay = document.getElementById('my-code');
+
+        generateCodeButton.addEventListener('click', () => {
+            socket.emit('generate_code');
+        });
+
+        socket.on('code_generated', (data) => {
+            myCodeDisplay.textContent = `Your Code: ${data.code}`;
+        });
+
+        // Send file
+        const sendFileButton = document.getElementById('send-file');
+        const recipientCodeInput = document.getElementById('recipient-code');
+        const fileInput = document.getElementById('file-input');
+
+        sendFileButton.addEventListener('click', () => {
+            const recipientCode = recipientCodeInput.value;
+            const file = fileInput.files[0];
+
+            if (!recipientCode || !file) {
+                alert('Recipient code and file are required.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('code', recipientCode);
+            formData.append('file', file);
+
+            fetch('/send_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('File sent successfully.');
+                } else {
+                    alert('Failed to send file. Please check the recipient code.');
+                }
+            })
+            .catch(err => console.error(err));
+        });
+
+        // Receive file
+        const receivedFilesList = document.getElementById('received-files');
+
+        socket.on('receive_file', (data) => {
+            const listItem = document.createElement('li');
+            const downloadLink = document.createElement('a');
+            const fileBlob = b64toBlob(data.file_data, data.file_type);
+
+            downloadLink.href = URL.createObjectURL(fileBlob);
+            downloadLink.download = data.file_name;
+            downloadLink.textContent = `Download ${data.file_name}`;
+            listItem.appendChild(downloadLink);
+            receivedFilesList.appendChild(listItem);
+        });
+
+        // Convert Base64 to Blob
+        function b64toBlob(b64Data, contentType = '', sliceSize = 512) {
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+
+            return new Blob(byteArrays, { type: contentType });
+        }
+    </script>
+</body>
+</html>
+
